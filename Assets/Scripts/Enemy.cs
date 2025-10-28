@@ -1,30 +1,30 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    public int scoreValue = 100;
+    public int scoreValue = 100; // Puntaje que otorga este enemigo al ser destruido.
 
     public void Die()
     {
-        FindObjectOfType<GameManager>()?.AddScore(scoreValue);
-        Destroy(gameObject);
+        // Suma puntaje al jugador al morir.
+        FindObjectOfType<GameManager>()?.AddScore(scoreValue); // Busca el GameManager en la escena y llama a AddScore si existe.
+        Destroy(gameObject);                                   // Destruye el enemigo actual.
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        // Detecta colisiones con otros objetos marcados como "Trigger".
+        if (other.CompareTag("Player")) // Si el objeto que colisiona tiene la etiqueta "Player"...
         {
-            // Poner vidas a 0
+            // Accede al GameManager para actualizar vidas y estado del juego.
             GameManager gm = FindObjectOfType<GameManager>();
             if (gm != null)
             {
-                gm.lives = 0;
-                gm.LoseLife(); // esto actualiza UI y activa GameOver
+                gm.lives = 0;      // Fuerza las vidas del jugador a 0.
+                gm.LoseLife();     // Actualiza la interfaz y activa el Game Over.
             }
 
-            // Desaparecer el jugador
+            // Elimina al jugador de la escena.
             Destroy(other.gameObject);
         }
     }
