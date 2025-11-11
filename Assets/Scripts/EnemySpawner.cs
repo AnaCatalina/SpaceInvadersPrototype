@@ -1,12 +1,16 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
+    public static EnemySpawner Instance { get; private set; }
+    public bool band = false;              // Bandera para controlar el cambio de dirección.
+
     public GameObject enemyPrefab;          // Prefab del enemigo que se instanciará.
     public int rows = 4;                    // Cantidad de filas de enemigos.
     public int cols = 8;                    // Cantidad de columnas de enemigos.
-    public Vector2 spacing = new Vector2(1.5f, 1.0f); // Distancia entre enemigos en X y Y.
+    public Vector2 spacing; // Distancia entre enemigos en X y Y.
 
     public float speed = 1.5f;              // Velocidad de desplazamiento horizontal del grupo.
     public float descendAmount = 0.5f;      // Distancia que baja el grupo al cambiar de dirección.
@@ -19,7 +23,16 @@ public class EnemySpawner : MonoBehaviour
     float startX;                           // Posición inicial en X del contenedor.
 
     List<GameObject> enemies = new List<GameObject>(); // Lista para rastrear los enemigos activos.
-
+    void Awake()
+    {
+        // Inicializa singleton.
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+            return;
+        }
+        Instance = this;
+    }
     void Start()
     {
         container = new GameObject("EnemyContainer").transform; // Crea un objeto vacío para agrupar enemigos.
@@ -54,7 +67,7 @@ public class EnemySpawner : MonoBehaviour
         float moveStep = speed * Time.deltaTime * direction;
         container.position += Vector3.right * moveStep;
 
-        // Cálculo de los bordes reales del grupo en base a su posición actual.
+        /** Cálculo de los bordes reales del grupo en base a su posición actual.
         float gridLeft = container.position.x + startX;
         float gridRight = gridLeft + (cols - 1) * spacing.x;
 
@@ -67,8 +80,7 @@ public class EnemySpawner : MonoBehaviour
         else if (gridLeft <= leftBound.position.x && direction < 0)
         {
             direction = 1f;
-            container.position += Vector3.down * descendAmount;
-        }
+        }**/
 
         // Limpia la lista eliminando referencias nulas (enemigos destruidos).
         enemies.RemoveAll(e => e == null);
@@ -76,7 +88,21 @@ public class EnemySpawner : MonoBehaviour
         // Si todos los enemigos fueron destruidos, activa el estado de victoria.
         if (enemies.Count == 0)
         {
-            FindObjectOfType<GameManager>()?.Win();
+            FindFirstObjectByType<GameManager>()?.Win();
         }
+    }
+    // Método estático llamado desde Enemy.cs. Redirige al singleton para modificar el estado del spawner real.
+    public static void ChangeHight()
+    {
+        if (Instance == null) return;
+        Instance.InternalChangeHight();
+    }
+
+    // Lógica de cambio de dirección y descenso — no estática.
+    void InternalChangeHight()
+    {
+        direction *= -1f;
+        if (container == null) container = new GameObject("EnemyContainer").transform; // Fallback por seguridad.
+        container.position += Vector3.down * descendAmount;
     }
 }

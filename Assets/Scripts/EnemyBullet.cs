@@ -26,7 +26,7 @@ public class EnemyBullet : MonoBehaviour
         // Detecta colisión con el jugador.
         if (other.CompareTag("Player"))
         {
-            FindObjectOfType<GameManager>()?.LoseLife(); // Resta una vida al jugador usando el GameManager.
+            FindFirstObjectByType<GameManager>()?.LoseLife(); // Resta una vida al jugador usando el GameManager.
             Destroy(gameObject);                          // Destruye la bala tras impactar.
         }
     }
