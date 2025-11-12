@@ -2,13 +2,7 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    public int scoreValue = 100; // Puntaje que otorga este enemigo al ser destruido.
-    public void Die()
-    {
-        // Suma puntaje al jugador al morir.
-        FindFirstObjectByType<GameManager>()?.AddScore(scoreValue); // Busca el GameManager en la escena y llama a AddScore si existe.
-        Destroy(gameObject);                                   // Destruye el enemigo actual.
-    }
+    [SerializeField] private int scoreValue = 50; // Puntaje que otorga este enemigo al ser destruido.
 
     void OnTriggerEnter2D(Collider2D other)
     {
@@ -46,5 +40,9 @@ public class Enemy : MonoBehaviour
                 break;
         }
         EnemySpawner.Instance.band = band;
+    }
+    private void OnDestroy()
+    {
+        FindFirstObjectByType<GameManager>()?.AddScore(scoreValue);
     }
 }

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnemyBullet : MonoBehaviour
 {
-    private float speed = 3f;       // Velocidad interna de la bala (inicial por defecto).
+    private float speed = 6f;       // Velocidad interna de la bala (inicial por defecto).
     private float lifeTime = 6f;    // Tiempo de vida antes de autodestruirse.
 
     public void Initialize(float bulletSpeed)

@@ -20,8 +20,8 @@ public class Bullet : MonoBehaviour
         // Se ejecuta cuando la bala entra en contacto con otro collider que tenga el modo "Is Trigger" activado.
         if (other.CompareTag("Enemy"))                    // Comprueba si el objeto con el que colisionó tiene la etiqueta "Enemy".
         {
-            other.GetComponent<Enemy>()?.Die();           // Busca el componente 'Enemy' en ese objeto y llama a su método 'Die()' (si existe).
-            Destroy(gameObject);                          // Destruye la bala inmediatamente después del impacto.
+            Destroy(other.gameObject);
+            Destroy(gameObject);
         }
     }
 }
