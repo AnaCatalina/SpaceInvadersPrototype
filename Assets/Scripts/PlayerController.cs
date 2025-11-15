@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+using UnityEngine.EventSystems;
 
 public class PlayerController : MonoBehaviour
 {
@@ -10,23 +12,56 @@ public class PlayerController : MonoBehaviour
 
     float nextFire;                       // Marca de tiempo para controlar la cadencia de disparo.
 
+    private void Awake()
+    {
+        StartCoroutine("FireRate");
+    }
     void Update()
     {
-        // Movimiento horizontal del jugador.
-        float h = Input.GetAxis("Horizontal");            // Captura el valor del eje horizontal (-1 a 1).
-        Vector3 pos = transform.position;                 // Copia la posición actual.
-        pos.x += h * speed * Time.deltaTime;              // Modifica la posición en X según la entrada y la velocidad.
-        pos.x = Mathf.Clamp(pos.x, -xLimit, xLimit);      // Restringe la posición dentro de los límites.
-        transform.position = pos;                         // Aplica la nueva posición al jugador.
+        // Lectura por teclado/joystick (sigue funcionando).
+        float h = Input.GetAxis("Horizontal");
 
-        // Control de disparo (barra espaciadora o botón de disparo).
-        if (Input.GetKey(KeyCode.Space) || Input.GetButton("Fire1"))
+        // --- Entrada táctil: mantiene movimiento mientras se mantiene el dedo en la mitad izquierda/derecha ---
+        if (Input.touchCount > 0)
         {
-            TryFire();                                    // Intenta disparar si el tiempo lo permite.
+            bool leftPressed = false;
+            bool rightPressed = false;
+
+            for (int i = 0; i < Input.touchCount; i++)
+            {
+                Touch t = Input.GetTouch(i);
+                if (t.phase == TouchPhase.Ended || t.phase == TouchPhase.Canceled) continue;
+
+                // Ignora toques sobre UI (si hay EventSystem en la escena).
+                if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(t.fingerId)) continue;
+
+                if (t.position.x < Screen.width * 0.5f) leftPressed = true;
+                else rightPressed = true;
+            }
+
+            if (leftPressed && !rightPressed) h = -1f;
+            else if (rightPressed && !leftPressed) h = 1f;
+            else h = 0f; // ambos presionados -> sin movimiento
         }
+        // --- Soporte para testing en Editor: click/hold con ratón en pantalla ---
+        else if (Input.GetMouseButton(0))
+        {
+            // Ignora clicks sobre UI
+            if (EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject())
+            {
+                Vector2 mp = Input.mousePosition;
+                h = (mp.x < Screen.width * 0.5f) ? -1f : 1f;
+            }
+        }
+
+        // Aplicar movimiento
+        Vector3 pos = transform.position;
+        pos.x += h * speed * Time.deltaTime;
+        pos.x = Mathf.Clamp(pos.x, -xLimit, xLimit);
+        transform.position = pos;
     }
 
-    void TryFire()
+    public void TryFire()
     {
         // Verifica si ha pasado el tiempo suficiente desde el último disparo.
         if (Time.time >= nextFire)
@@ -34,5 +69,11 @@ public class PlayerController : MonoBehaviour
             Instantiate(bulletPrefab, firePoint.position, Quaternion.identity); // Crea una bala en la posición del firePoint.
             nextFire = Time.time + fireRate;                                    // Calcula el próximo momento de disparo permitido.
         }
+        StartCoroutine("FireRate");
+    }
+    private IEnumerator FireRate()
+    {
+        yield return new WaitForSeconds(0.75f);
+        TryFire();
     }
 }
